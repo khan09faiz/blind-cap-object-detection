@@ -1,0 +1,30 @@
+# Core dependencies for enhanced blind detection system
+
+# Computer Vision and Object Detection
+ultralytics>=8.0.0          # YOLOv8 and latest YOLO models
+opencv-python>=4.8.0        # Computer vision and camera handling
+numpy>=1.21.0               # Numerical operations
+Pillow>=9.0.0               # Image processing
+
+# Audio and Text-to-Speech
+pyttsx3>=2.90               # Text-to-speech engine
+pyaudio>=0.2.11             # Audio input/output (optional for advanced audio)
+
+# Configuration Management
+PyYAML>=6.0                 # YAML configuration file support
+
+# GPU Acceleration (optional but recommended)
+torch>=2.0.0                # PyTorch for GPU acceleration
+torchvision>=0.15.0         # Computer vision models
+
+# Development and Testing
+pytest>=7.0.0               # Unit testing framework
+pytest-cov>=4.0.0           # Test coverage
+black>=22.0.0               # Code formatting
+flake8>=5.0.0               # Code linting
+
+# Logging and Monitoring
+colorlog>=6.7.0             # Colored logging output
+
+# System utilities
+psutil>=5.9.0               # System and process utilities
