@@ -59,6 +59,53 @@ class SpatialAnalyzer:
             'cake': 1
         }
     
+    def analyze_position(self, bbox: Tuple[int, int, int, int]) -> Dict[str, str]:
+        """
+        Analyze position of a bounding box and return detailed information.
+        
+        Args:
+            bbox: Bounding box coordinates (x1, y1, x2, y2)
+            
+        Returns:
+            Dict[str, str]: Dictionary with position analysis
+        """
+        x1, y1, x2, y2 = bbox
+        center_x = (x1 + x2) // 2
+        center_y = (y1 + y2) // 2
+        
+        # Calculate position zone
+        left_boundary = self.frame_width * 0.33
+        right_boundary = self.frame_width * 0.67
+        
+        if center_x < left_boundary:
+            zone = 'left'
+        elif center_x > right_boundary:
+            zone = 'right'
+        else:
+            zone = 'center'
+        
+        # Calculate distance based on bbox size
+        bbox_width = x2 - x1
+        bbox_height = y2 - y1
+        bbox_area = bbox_width * bbox_height
+        frame_area = self.frame_width * self.frame_height
+        area_ratio = bbox_area / frame_area
+        
+        if area_ratio > 0.30:
+            distance_category = 'close'
+        elif area_ratio > 0.10:
+            distance_category = 'medium'
+        else:
+            distance_category = 'far'
+        
+        return {
+            'zone': zone,
+            'distance_category': distance_category,
+            'center_x': str(center_x),
+            'center_y': str(center_y),
+            'area_ratio': f"{area_ratio:.3f}"
+        }
+
     def calculate_position(self, detection: Detection, frame_width: int = None) -> str:
         """
         Calculate object position (left/center/right).

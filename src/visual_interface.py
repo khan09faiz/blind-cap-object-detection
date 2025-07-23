@@ -67,7 +67,7 @@ class VisualInterface:
     def create_window(self):
         """Create the display window."""
         if not self.window_created:
-            cv2.namedWindow(self.settings.window_name, cv2.WINDOW_RESIZABLE)
+            cv2.namedWindow(self.settings.window_name, cv2.WINDOW_NORMAL)
             cv2.resizeWindow(self.settings.window_name, 
                            self.settings.window_width, 
                            self.settings.window_height)

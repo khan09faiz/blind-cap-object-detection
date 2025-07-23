@@ -58,17 +58,20 @@ class BlindDetectionApp:
                 self.spatial_analyzer = None
                 self.audio_manager = None
                 self.frame_processor = None
+                self.visual_interface = None
                 
                 # Application state
                 self.running = False
                 self.initialized = False
                 self.last_path_clear_state = None
+                self.enable_visual_display = True  # Enable visual display by default
                 
                 # Performance tracking
                 self.frame_count = 0
                 self.start_time = None
                 self.last_fps_report = 0
                 self.performance_logger = self.logging_manager.create_performance_logger()
+                self.current_detections = []  # Store current detections for visual display
                 
                 # Setup signal handlers for graceful shutdown
                 signal.signal(signal.SIGINT, self.signal_handler)
@@ -199,6 +202,27 @@ class BlindDetectionApp:
                     # Continue without audio - system can still work
                     self.audio_manager = None
                 
+                # Initialize visual interface
+                self.logger.info("Initializing visual interface...")
+                try:
+                    if self.enable_visual_display:
+                        self.visual_interface = create_visual_interface(
+                            enable_visual=True,
+                            window_size=(800, 600)
+                        )
+                        if self.visual_interface:
+                            self.logger.info("Visual interface initialized successfully")
+                        else:
+                            self.logger.warning("Visual interface disabled")
+                    else:
+                        self.logger.info("Visual interface disabled by configuration")
+                except Exception as e:
+                    visual_error = SystemError(f"Visual interface initialization failed: {e}",
+                                             ErrorSeverity.LOW,
+                                             "Continuing without visual display")
+                    self.error_handler.handle_error(visual_error, "visual interface initialization")
+                    self.visual_interface = None
+                
                 # Verify critical components are ready
                 critical_components = [self.frame_processor, self.detector, self.spatial_analyzer]
                 if not all(critical_components):
@@ -290,16 +314,18 @@ class BlindDetectionApp:
                     return False
                 
                 # Process detections if any found
+                self.current_detections = []  # Reset current detections
                 if detections:
                     try:
                         with self.performance_monitor.measure_audio():
-                            self.process_detections(detections)
+                            self.current_detections = self.process_detections(detections)
                     except Exception as e:
                         processing_error = SystemError(f"Detection processing failed: {e}",
                                                      ErrorSeverity.MEDIUM,
                                                      "Check spatial analysis and audio systems")
                         self.error_handler.handle_error(processing_error, "detection processing")
                         # Continue processing even if this fails
+                        self.current_detections = []
                 else:
                     # Check if path was previously blocked and now clear
                     current_path_clear = True
@@ -312,6 +338,33 @@ class BlindDetectionApp:
                                 logger=self.logger
                             )
                     self.last_path_clear_state = current_path_clear
+                
+                # Handle visual display
+                if self.visual_interface:
+                    try:
+                        # Calculate current FPS
+                        current_fps = self.performance_monitor.get_current_metrics().fps
+                        
+                        # Process frame for visual display
+                        display_frame = self.visual_interface.process_frame(
+                            raw_frame, 
+                            self.current_detections, 
+                            self.spatial_analyzer, 
+                            current_fps
+                        )
+                        
+                        # Show frame and check for exit signal
+                        if not self.visual_interface.show_frame(display_frame):
+                            self.logger.info("Visual interface requested shutdown")
+                            self.running = False
+                            return False
+                            
+                    except Exception as e:
+                        visual_error = SystemError(f"Visual display error: {e}",
+                                                 ErrorSeverity.LOW,
+                                                 "Continuing without visual display")
+                        self.error_handler.handle_error(visual_error, "visual display")
+                        # Continue without visual display
                 
                 # Update frame counter for performance tracking
                 self.frame_count += 1
@@ -327,13 +380,18 @@ class BlindDetectionApp:
             self.error_handler.handle_error(system_error, "frame processing")
             return False
     
-    def process_detections(self, detections: List[Detection]) -> None:
+    def process_detections(self, detections: List[Detection]) -> List[Tuple[Detection, str, str]]:
         """
         Process detected objects through spatial analysis and audio feedback with error handling.
         
         Args:
             detections: List of detected objects
+            
+        Returns:
+            List[Tuple[Detection, str, str]]: List of (detection, position, distance) tuples
         """
+        detection_results = []
+        
         try:
             # Prioritize objects based on spatial analysis
             try:
@@ -344,6 +402,24 @@ class BlindDetectionApp:
                                            "Using original detection order as fallback")
                 self.error_handler.handle_error(spatial_error, "object prioritization")
                 prioritized_detections = detections  # Fallback to original order
+            
+            # Analyze each detection for position and distance
+            for detection in prioritized_detections:
+                try:
+                    # Get spatial position analysis
+                    position_info = self.spatial_analyzer.analyze_position(detection.bbox)
+                    position = position_info.get('zone', 'center')
+                    distance = position_info.get('distance_category', 'medium')
+                    
+                    detection_results.append((detection, position, distance))
+                    
+                except Exception as e:
+                    spatial_error = SystemError(f"Position analysis failed for {detection.class_name}: {e}",
+                                               ErrorSeverity.LOW,
+                                               "Using default position values")
+                    self.error_handler.handle_error(spatial_error, "position analysis")
+                    # Use default values for failed analysis
+                    detection_results.append((detection, 'center', 'medium'))
             
             # Get comprehensive navigation guidance
             guidance_messages = []
@@ -411,13 +487,15 @@ class BlindDetectionApp:
                             f"prioritized: {len(prioritized_detections)}, "
                             f"guidance messages: {len(guidance_messages)}")
             
+            return detection_results
+            
         except Exception as e:
             # Catch-all for unexpected errors in detection processing
             system_error = SystemError(f"Unexpected error processing detections: {e}",
                                      ErrorSeverity.MEDIUM,
                                      "Detection processing will continue with next frame")
             self.error_handler.handle_error(system_error, "detection processing")
-            raise  # Re-raise to be handled by caller
+            return detection_results  # Return whatever we have so far
     
     def report_performance(self) -> None:
         """Report performance metrics using enhanced monitoring system."""
@@ -773,6 +851,14 @@ class BlindDetectionApp:
                     self.logger.info("Cleaning up audio manager...")
                     safe_execute(
                         self.audio_manager.cleanup,
+                        logger=self.logger
+                    )
+                
+                # Cleanup visual interface
+                if self.visual_interface:
+                    self.logger.info("Cleaning up visual interface...")
+                    safe_execute(
+                        self.visual_interface.cleanup,
                         logger=self.logger
                     )
                 
