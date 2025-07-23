@@ -11,6 +11,10 @@ A real-time object detection system designed to assist visually impaired users w
 ⚡ **GPU Acceleration** - CUDA support for better performance
 🎛️ **Multiple Scenarios** - Indoor, outdoor, and performance-optimized modes
 
+# Colaborator
+**Aviral Rai 
+**Mohammad Faiz Khan 
+
 ## Quick Start
 
 1. **Install Dependencies**
