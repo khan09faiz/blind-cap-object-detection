@@ -1,0 +1,33 @@
+# dataset.yaml — YOLO dataset configuration
+#
+# Used by:
+#   - training/colab_training.ipynb  (Colab GPU training)
+#   - training/train_detector.py     (local smoke-test)
+#
+# The `path` field is overwritten at runtime inside the Colab notebook
+# with the absolute path.  Adjust it if running locally.
+
+path: dataset_yolo        # root of the converted YOLO dataset
+
+train: images/train
+val: images/val
+
+nc: 15                    # number of classes
+
+# Open Images uses these exact label strings — must match oidv6 output
+names:
+  0: person
+  1: chair
+  2: table
+  3: couch
+  4: bed
+  5: door
+  6: bench
+  7: waste_container
+  8: fire_hydrant
+  9: postbox
+  10: car
+  11: bus
+  12: truck
+  13: bicycle
+  14: dog

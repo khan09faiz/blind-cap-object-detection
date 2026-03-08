@@ -1,4 +1,4 @@
-# Python
+# ─── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
@@ -20,39 +20,68 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
+# ─── Virtual environments ─────────────────────────────────────────────────────
+.venv/
 venv/
 env/
 ENV/
+.env
 
-# IDE
+# ─── IDE / Editor ─────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
-
-# OS
+# ─── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Model files (download automatically)
+# ─── Model weights (large binary files — download/train separately) ───────────
 *.pt
+*.pth
 *.onnx
 *.engine
+*.tflite
+*.pb
+*.caffemodel
 
-# Logs
+# ─── Dataset & training artefacts ─────────────────────────────────────────────
+datasets/
+training/runs/
+training/weights/
+runs/
+*.cache
+labels.cache
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
 logs/
 *.log
 
-# Screenshots (except demo screenshot)
+# ─── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ─── Screenshots / media ──────────────────────────────────────────────────────
 *.jpg
-*.png
-detection_screenshot_*.jpg
+*.jpeg
+detection_screenshot_*.png
 !Screenshot*.png
+!docs/assets/*.png
+!docs/assets/*.jpg
 
-# Config backups
+# ─── Config backups & temp ────────────────────────────────────────────────────
 config_backup_*.yaml
+*.tmp
+*.bak
 
-# Performance data
+# ─── Performance snapshots ────────────────────────────────────────────────────
 performance_*.json
+
+# ─── Agent / tool workspace files ─────────────────────────────────────────────
+ptomptagent
+.prompt
+*.agent.md

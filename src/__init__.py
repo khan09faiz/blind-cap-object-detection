@@ -1,1 +1,0 @@
-# Enhanced Blind Detection System

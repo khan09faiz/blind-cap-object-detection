@@ -5,8 +5,12 @@ Frame processing module for camera handling and frame preprocessing.
 import cv2
 import numpy as np
 import logging
-from typing import Optional, Tuple, List
-from .config import Config
+from typing import Optional, Tuple, List, Any
+
+try:
+    from .config import Config
+except ImportError:
+    Config = None
 
 
 class CameraError(Exception):

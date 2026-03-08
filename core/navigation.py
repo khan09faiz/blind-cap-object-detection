@@ -2,12 +2,20 @@
 Navigation guidance system for contextual safety guidance and object-specific messaging.
 """
 
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 from enum import Enum
 from dataclasses import dataclass
 import time
 import logging
-from .detector import Detection
+
+
+@dataclass
+class Detection:
+    """Minimal Detection dataclass for navigation context."""
+    class_name: str
+    confidence: float
+    bbox: Tuple[int, int, int, int]
+    center_point: Tuple[int, int]
 
 logger = logging.getLogger(__name__)
 

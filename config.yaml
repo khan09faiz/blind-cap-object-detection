@@ -1,142 +1,122 @@
-# Enhanced Blind Detection System - Unified Configuration
-# Multiple scenarios in one file - use scenario parameter to select
-
-# Default scenario configuration
+# ──────────── Default configuration ────────────
+# After Colab training, copy best.pt to models/best.pt and switch
+# model_path to "models/best.pt" (or use the `custom` scenario below).
 default:
-  # Model settings
-  model_name: 'yolov8n.pt'    # YOLOv8 nano model (fastest, good for real-time)
-  confidence_threshold: 0.5   # Minimum confidence for detections (0.0-1.0)
-  device: 'auto'              # Device selection: 'auto', 'cpu', or 'cuda'
-  
-  # Camera settings
-  camera_index: 0             # Camera device index (usually 0 for default camera)
-  frame_width: 640            # Frame width in pixels
-  frame_height: 480           # Frame height in pixels
-  
-  # Audio settings
-  voice_rate: 200             # Speech rate (50-400 words per minute)
-  voice_volume: 0.9           # Speech volume (0.0-1.0)
-  announcement_cooldown: 2.0  # Seconds between repeated announcements
-  
-  # Detection settings - Common objects
-  target_classes:
-    - 'person'
-    - 'chair'
-    - 'table'
-    - 'sofa'
-    - 'bed'
-    - 'tv'
-    - 'laptop'
-    - 'book'
-    - 'bottle'
-    - 'cup'
-  
-  # Spatial analysis settings
-  distance_thresholds:
-    close: 0.3              # Objects with bbox area > 30% of frame
-    medium: 0.1             # Objects with bbox area 10-30% of frame
-    far: 0.0                # Objects with bbox area < 10% of frame
+  detector:
+    model_path: "yolov10n.pt"   # swap to "models/best.pt" after training
+    confidence_threshold: 0.4
 
-# Indoor navigation scenario
+  depth:
+    model_name: "MiDaS_small"
+    frame_interval: 3          # run depth every N frames (saves CPU)
+
+  tracker:
+    iou_threshold: 0.4
+    announcement_cooldown_frames: 60   # re-announce after this many frames
+
+  speech:
+    rate: 150
+    volume: 1.0
+
+  camera:
+    device_id: 0
+    width: 640
+    height: 480
+
+  target_classes:
+    - person
+    - chair
+    - table
+    - car
+    - bus
+    - bicycle
+    - motorcycle
+    - truck
+    - dog
+    - cat
+    - stairs
+    - door
+    - traffic light
+    - pole
+
+# ──────────── Scenario overrides ────────────
 indoor:
-  # Model settings - Balanced performance
-  model_name: 'yolov8s.pt'
-  confidence_threshold: 0.55
-  device: 'auto'
-  
-  # Camera settings - Standard resolution
-  camera_index: 0
-  frame_width: 640
-  frame_height: 480
-  
-  # Audio settings - Comfortable speech rate
-  voice_rate: 200
-  voice_volume: 0.9
-  announcement_cooldown: 2.0
-  
-  # Detection settings - Indoor-focused objects
+  detector:
+    model_path: "yolov10s.pt"
+    confidence_threshold: 0.45
+  depth:
+    frame_interval: 2
   target_classes:
-    # People and pets (highest priority)
-    - 'person'
-    - 'cat'
-    - 'dog'
-    # Furniture (navigation obstacles)
-    - 'chair'
-    - 'table'
-    - 'sofa'
-    - 'bed'
-    - 'toilet'
-    # Electronics and appliances
-    - 'tv'
-    - 'laptop'
-    - 'microwave'
-    - 'oven'
-    - 'refrigerator'
-    # Common household items
-    - 'potted plant'
-    - 'vase'
-    - 'book'
-    - 'bottle'
-    - 'cup'
-    - 'backpack'
-    - 'suitcase'
-  
-  # Spatial analysis settings
-  distance_thresholds:
-    close: 0.4
-    medium: 0.15
-    far: 0.05
+    - person
+    - chair
+    - table
+    - sofa
+    - bed
+    - toilet
+    - tv
+    - laptop
+    - door
+    - dog
+    - cat
 
-# Outdoor navigation scenario
 outdoor:
-  # Model settings - Higher accuracy for complex outdoor scenes
-  model_name: 'yolov8m.pt'
-  confidence_threshold: 0.6
-  device: 'auto'
-  
-  # Camera settings - Higher resolution for distant objects
-  camera_index: 0
-  frame_width: 1280
-  frame_height: 720
-  
-  # Audio settings - Louder and clearer for outdoor use
-  voice_rate: 220
-  voice_volume: 1.0
-  announcement_cooldown: 1.8
-  
-  # Detection settings - Outdoor-focused objects
+  detector:
+    model_path: "yolov10s.pt"
+    confidence_threshold: 0.5
+  camera:
+    width: 1280
+    height: 720
+  depth:
+    frame_interval: 3
   target_classes:
-    # People and animals (highest priority)
-    - 'person'
-    - 'dog'
-    - 'cat'
-    - 'bird'
-    # Vehicles (safety critical)
-    - 'bicycle'
-    - 'car'
-    - 'motorcycle'
-    - 'bus'
-    - 'truck'
-    # Street furniture and obstacles
-    - 'bench'
-    - 'chair'
-    - 'potted plant'
-    - 'fire hydrant'
-    - 'stop sign'
-    - 'parking meter'
-    # Outdoor equipment
-    - 'umbrella'
-    - 'backpack'
-    - 'suitcase'
-    - 'sports ball'
-    - 'skateboard'
-    - 'surfboard'
-  
-  # Spatial analysis settings
-  distance_thresholds:
-    close: 0.25
-    medium: 0.08
-    far: 0.02
+    - person
+    - car
+    - bus
+    - truck
+    - motorcycle
+    - bicycle
+    - traffic light
+    - stop sign
+    - pole
+    - stairs
+    - dog
+
+high_performance:
+  detector:
+    model_path: "yolov10n.pt"
+    confidence_threshold: 0.35
+  depth:
+    frame_interval: 5          # less frequent depth → higher FPS
+  camera:
+    width: 640
+    height: 480
+
+# ──────────── Custom-trained model (after Colab training) ────────────
+# Copy best.pt to models/best.pt, then run:
+#   python run_app.py --scenario custom
+custom:
+  detector:
+    model_path: "models/best.pt"
+    confidence_threshold: 0.4
+  depth:
+    frame_interval: 3
+  # Class names as stored in best.pt (Open Images label convention)
+  target_classes:
+    - person
+    - chair
+    - table
+    - couch
+    - bed
+    - door
+    - bench
+    - waste_container
+    - fire_hydrant
+    - postbox
+    - car
+    - bus
+    - truck
+    - bicycle
+    - dog
 
 # High performance scenario (for powerful hardware)
 high_performance:
