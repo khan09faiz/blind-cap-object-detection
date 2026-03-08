@@ -92,9 +92,8 @@ Webcam frame
 ```
 blind-cap-object-detection/
 ├── main.py                   # Entry point — opens webcam, runs pipeline loop
-├── run_app.py                # Thin wrapper (same as main.py, kept for compatibility)
-├── run_visual_demo.py        # Visual demo with OpenCV overlay window
-├── launch.py                 # Cross-platform launcher
+├── run_app.py                # Convenience launcher (wraps main.py, extra arg handling)
+├── launch.py                 # Auto-detecting launcher (picks scenario from camera caps)
 ├── config.yaml               # All configuration (5 scenarios)
 ├── requirements.txt
 │
@@ -126,8 +125,7 @@ blind-cap-object-detection/
 │
 └── training/
     ├── colab_training.ipynb  # Full Colab training notebook (Open Images + YOLOv10)
-    ├── dataset.yaml          # Class definitions for training
-    └── train_detector.py     # Local validation script (validate best.pt)
+    └── dataset.yaml          # Class definitions for training
 ```
 
 ---
@@ -170,8 +168,8 @@ python run_app.py --scenario indoor
 python run_app.py --scenario outdoor
 python run_app.py --scenario default
 
-# Visual demo with overlay window
-python run_visual_demo.py --scenario custom
+# Auto-detecting launcher (picks scenario based on camera resolution)
+python launch.py
 ```
 
 ### 4. Camera Window Controls
